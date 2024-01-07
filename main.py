@@ -113,13 +113,18 @@ class LidlScraper(Scraper):
     def _load_whole_page(self, web_driver: webdriver.Chrome, web_driver_wait: WebDriverWait):
         try:
             window_height = self._driver.execute_script("return window.innerHeight;")
+            scrolling_without_new_elements = 0
             while True:
                 num_elements_before = len(web_driver.find_elements(By.XPATH, "//div[@class='product-grid-box grid-box']"))
                 web_driver.execute_script(f"window.scrollBy(0, {window_height});")
                 web_driver_wait.until(EC.visibility_of_all_elements_located((By.XPATH, "//div[@class='product-grid-box grid-box']")))
                 num_elements_after = len(web_driver.find_elements(By.XPATH, "//div[@class='product-grid-box grid-box']"))
                 if num_elements_after == num_elements_before:
-                    break
+                    scrolling_without_new_elements += 1
+                    if scrolling_without_new_elements == 3:
+                        break
+                else:
+                    scrolling_without_new_elements = 0
         except:
             print("Elemente nicht gefunden")
 
